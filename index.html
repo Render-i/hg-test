@@ -9,7 +9,7 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
-            padding: 1rem 1rem 90px 1rem; /* extra bottom padding for sticky bar */
+            padding: 1rem 1rem 90px 1rem;
             line-height: 1.5;
             transition: background 0.3s, color 0.3s;
         }
@@ -78,11 +78,10 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-        #loadFoldersBtn, #createFolderBtn { background: #28a745; color: white; }
-        #loadFoldersBtn:hover:not(:disabled), #createFolderBtn:hover:not(:disabled) { background: #218838; }
+        #loadFoldersBtn, #createFolderBtn, #listFoldersBtn { background: #28a745; color: white; }
+        #loadFoldersBtn:hover:not(:disabled), #createFolderBtn:hover:not(:disabled), #listFoldersBtn:hover:not(:disabled) { background: #218838; }
         button:disabled { background: #555 !important; cursor: not-allowed; color: #aaa; }
 
-        /* ── Sticky bottom action bar (mobile only) ──────────────────────────────── */
         .sticky-action {
             position: fixed;
             bottom: 0;
@@ -105,14 +104,12 @@
             margin: 0;
         }
 
-        /* Show only on mobile */
         @media (max-width: 767px) {
             .sticky-action { display: block; }
-            .action-buttons { display: none; } /* hide original on mobile */
+            .action-buttons { display: none; }
             body { padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
         }
 
-        /* Safe area support (iPhone bottom bar) */
         @supports (padding-bottom: env(safe-area-inset-bottom)) {
             .sticky-action { padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
         }
@@ -124,15 +121,23 @@
             font-size: 0.95rem;
             white-space: pre-wrap;
             word-break: break-word;
-            max-height: 40vh;
+            max-height: 50vh;
             overflow-y: auto;
+            background: #f8f9fa;
         }
-        .success { background: #2e7d32; color: #d4edda; }
-        .error   { background: #c62828; color: #ffcdd2; }
-        .info    { background: #37474f; color: #e0e0e0; }
-        body.light .success { background: #d4edda; color: #155724; }
-        body.light .error   { background: #f8d7da; color: #721c24; }
-        body.light .info    { background: #e2e3e5; color: #383d41; }
+        body.dark #result { background: #1e1e1e; }
+
+        .success { background: #d4edda; color: #155724; }
+        .error   { background: #f8d7da; color: #721c24; }
+        .info    { background: #e2e3e5; color: #383d41; }
+        body.dark .success { background: #2e7d32; color: #d4edda; }
+        body.dark .error   { background: #c62828; color: #ffcdd2; }
+        body.dark .info    { background: #37474f; color: #e0e0e0; }
+
+        details { margin: 8px 0; }
+        summary { cursor: pointer; font-weight: 600; }
+        ul.folder-tree { list-style: none; padding-left: 20px; }
+        li.folder-item { margin: 4px 0; }
 
         small.note { display: block; margin-top: 0.4rem; font-size: 0.85rem; }
         body.light small.note { color: #6c757d; }
@@ -169,11 +174,12 @@
 
     <div class="form-group">
         <label>Folder Tools</label>
-        <div class="action-buttons" style="margin: 0.5rem 0 1rem;">
+        <div class="action-buttons" style="margin: 0.5rem 0 1rem; flex-wrap: wrap; gap: 8px;">
             <button id="loadFoldersBtn">Load Folders</button>
             <button id="createFolderBtn">Create Folder</button>
+            <button id="listFoldersBtn">List Folders</button>
         </div>
-        <small class="note">Create folder → it auto-selects → then paste URL & upload</small>
+        <small class="note">List shows full structure • Create auto-selects new folder • Load fills dropdown</small>
     </div>
 
     <div class="form-group" id="folderSelectGroup" style="display:none;">
@@ -199,12 +205,12 @@
         <small class="note">0 = root • auto-updates from selection or new folder</small>
     </div>
 
-    <!-- Desktop / large screen action button -->
+    <!-- Desktop action -->
     <div class="action-buttons" id="desktopAction">
         <button id="mainActionBtn">Upload Video</button>
     </div>
 
-    <!-- Sticky bottom bar – visible only on mobile -->
+    <!-- Mobile sticky bar -->
     <div class="sticky-action">
         <button id="mobileMainBtn">Upload Video</button>
     </div>
@@ -214,7 +220,7 @@
 </div>
 
 <script>
-    // ── Theme Toggle ───────────────────────────────────────
+    // Theme Toggle
     const toggle = document.getElementById('themeToggle');
     const body = document.body;
 
@@ -234,12 +240,13 @@
 
     toggle.addEventListener('click', () => setTheme(!body.classList.contains('dark')));
 
-    // ── App Logic ──────────────────────────────────────────
+    // ── Core Logic ─────────────────────────────────────────
     const apiKeyInput    = document.getElementById('apiKey');
     const urlInput       = document.getElementById('videoUrl');
     const clearBtn       = document.getElementById('clearUrl');
     const loadBtn        = document.getElementById('loadFoldersBtn');
     const createBtn      = document.getElementById('createFolderBtn');
+    const listBtn        = document.getElementById('listFoldersBtn');
     const desktopBtn     = document.getElementById('mainActionBtn');
     const mobileBtn      = document.getElementById('mobileMainBtn');
     const folderSelect   = document.getElementById('folderSelect');
@@ -247,9 +254,9 @@
     const folderInput    = document.getElementById('folderId');
     const newNameInput   = document.getElementById('newFolderName');
     const newDescInput   = document.getElementById('newFolderDesc');
-    const result         = document.getElementById('result');
+    const resultDiv      = document.getElementById('result');
 
-    const MAX_DEPTH = 5;
+    const MAX_DEPTH = 6; // increased slightly – adjust if too slow
 
     function updateMainButton() {
         const hasUrl = urlInput.value.trim().length > 0;
@@ -301,6 +308,8 @@
                 const opt = new Option(prefix + (f.name || 'Unnamed') + ` (ID: ${f.fld_id})`, f.fld_id);
                 opt.className = `level-${depth + 1}`;
                 all.push(opt);
+
+                // For tree view we collect structure
                 const subs = await fetchFolders(f.fld_id, depth + 1, prefix + '→ ');
                 all.push(...subs);
             }
@@ -310,17 +319,73 @@
         }
     }
 
+    // ── List Folders as Collapsible Tree ──────────────────────────
+    async function listFoldersTree() {
+        const key = apiKeyInput.value.trim();
+        if (!key) return show('Enter API key first', 'error');
+
+        listBtn.disabled = true;
+        listBtn.textContent = 'Listing...';
+        show('Fetching full folder structure... (may take a moment)', 'info');
+
+        try {
+            resultDiv.innerHTML = '<p>Building folder tree...</p>';
+
+            // Start recursive build
+            const treeHtml = await buildFolderTreeHtml(0, 0);
+
+            resultDiv.innerHTML = treeHtml || '<p>No folders found (or empty root).</p>';
+            show('Folder list loaded.', 'success');
+        } catch (e) {
+            show(`Error fetching folders: ${e.message}`, 'error');
+        } finally {
+            listBtn.disabled = false;
+            listBtn.textContent = 'List Folders';
+        }
+    }
+
+    async function buildFolderTreeHtml(parentId = 0, depth = 0) {
+        const key = apiKeyInput.value.trim();
+        const params = new URLSearchParams({ key, fld_id: parentId, files: 0 });
+        try {
+            const res = await fetch(`https://streamhgapi.com/api/folder/list?${params}`);
+            const data = await res.json();
+            if (data.status !== 200 || data.msg !== "OK") return '';
+
+            const folders = data.result?.folders || [];
+            if (folders.length === 0) return '';
+
+            let html = depth === 0 ? '<ul class="folder-tree">' : '<ul>';
+            for (const folder of folders) {
+                const name = folder.name || 'Unnamed';
+                const id = folder.fld_id;
+                const indent = '→ '.repeat(depth);
+                html += `<li class="folder-item"><details><summary>${indent}${name} (ID: ${id})</summary>`;
+                const children = await buildFolderTreeHtml(id, depth + 1);
+                if (children) html += children;
+                html += '</details></li>';
+            }
+            html += '</ul>';
+            return html;
+        } catch {
+            return '';
+        }
+    }
+
+    listBtn.addEventListener('click', listFoldersTree);
+
+    // ── Load Folders into Dropdown (existing) ─────────────────────
     loadBtn.addEventListener('click', async () => {
         const key = apiKeyInput.value.trim();
         if (!key) return show('Enter API key first', 'error');
         loadBtn.disabled = true; loadBtn.textContent = 'Loading...';
-        show('Fetching folders...', 'info');
+        show('Fetching folders for dropdown...', 'info');
         try {
             folderSelect.innerHTML = '<option value="0">Root / Default (ID: 0)</option>';
             const subs = await fetchFolders();
             subs.forEach(o => folderSelect.appendChild(o));
             folderGroup.style.display = 'block';
-            show(`Folders loaded (${subs.length} subfolders).`, 'success');
+            show(`Dropdown loaded (${subs.length} subfolders).`, 'success');
         } catch (e) {
             show(`Error: ${e.message}`, 'error');
         } finally {
@@ -328,6 +393,7 @@
         }
     });
 
+    // ── Create Folder (existing) ────────────────────────────────
     createBtn.addEventListener('click', () => createFolder(true));
 
     async function createFolder(fromSmallButton = false) {
@@ -382,6 +448,7 @@
         }
     }
 
+    // ── Main Action (Upload or Create) ──────────────────────────
     async function handleMainAction() {
         const hasUrl = urlInput.value.trim().length > 0;
         if (!hasUrl) {
@@ -424,8 +491,9 @@
     mobileBtn.addEventListener('click', handleMainAction);
 
     function show(text, type = 'info') {
-        result.textContent = text;
-        result.className = type;
+        resultDiv.textContent = text;
+        resultDiv.className = type;
+        resultDiv.innerHTML = ''; // clear any previous HTML if needed
     }
 
     // Init
