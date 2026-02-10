@@ -9,7 +9,7 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
-            padding: 1rem 1rem 90px 1rem;
+            padding: 1rem 1rem 100px 1rem; /* extra space for bottom bar */
             line-height: 1.5;
             transition: background 0.3s, color 0.3s;
         }
@@ -65,11 +65,21 @@
         body.dark  .clear-btn { color: #aaa; }
         .clear-btn:hover { color: #212529; }
 
+        /* Main action buttons (upload/create only) */
         .action-buttons {
             display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 1.5rem 0;
         }
+
+        /* Folder tools buttons – always visible */
+        .folder-tools-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 0.5rem 0 1.2rem;
+            justify-content: center;
+        }
+
         button {
-            flex: 1 1 180px;
             padding: 0.9rem 1.2rem;
             font-size: 1.05rem;
             font-weight: 600;
@@ -77,11 +87,14 @@
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s;
+            flex: 1 1 140px;
+            min-width: 140px;
         }
         #loadFoldersBtn, #createFolderBtn, #listFoldersBtn { background: #28a745; color: white; }
         #loadFoldersBtn:hover:not(:disabled), #createFolderBtn:hover:not(:disabled), #listFoldersBtn:hover:not(:disabled) { background: #218838; }
         button:disabled { background: #555 !important; cursor: not-allowed; color: #aaa; }
 
+        /* Sticky bottom action (main button only) */
         .sticky-action {
             position: fixed;
             bottom: 0;
@@ -106,8 +119,13 @@
 
         @media (max-width: 767px) {
             .sticky-action { display: block; }
-            .action-buttons { display: none; }
-            body { padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+            .action-buttons { display: none; } /* only hides main upload button */
+            .folder-tools-buttons {
+                display: flex !important;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            body { padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px)); }
         }
 
         @supports (padding-bottom: env(safe-area-inset-bottom)) {
@@ -174,12 +192,12 @@
 
     <div class="form-group">
         <label>Folder Tools</label>
-        <div class="action-buttons" style="margin: 0.5rem 0 1rem; flex-wrap: wrap; gap: 8px;">
+        <div class="folder-tools-buttons">
             <button id="loadFoldersBtn">Load Folders</button>
             <button id="createFolderBtn">Create Folder</button>
             <button id="listFoldersBtn">List Folders</button>
         </div>
-        <small class="note">List shows full structure • Create auto-selects new folder • Load fills dropdown</small>
+        <small class="note">List shows full structure • Create auto-selects • Load fills dropdown</small>
     </div>
 
     <div class="form-group" id="folderSelectGroup" style="display:none;">
@@ -205,7 +223,7 @@
         <small class="note">0 = root • auto-updates from selection or new folder</small>
     </div>
 
-    <!-- Desktop action -->
+    <!-- Desktop main action -->
     <div class="action-buttons" id="desktopAction">
         <button id="mainActionBtn">Upload Video</button>
     </div>
@@ -240,7 +258,7 @@
 
     toggle.addEventListener('click', () => setTheme(!body.classList.contains('dark')));
 
-    // ── Core Logic ─────────────────────────────────────────
+    // Core Logic
     const apiKeyInput    = document.getElementById('apiKey');
     const urlInput       = document.getElementById('videoUrl');
     const clearBtn       = document.getElementById('clearUrl');
@@ -256,7 +274,7 @@
     const newDescInput   = document.getElementById('newFolderDesc');
     const resultDiv      = document.getElementById('result');
 
-    const MAX_DEPTH = 6; // increased slightly – adjust if too slow
+    const MAX_DEPTH = 6;
 
     function updateMainButton() {
         const hasUrl = urlInput.value.trim().length > 0;
@@ -308,8 +326,6 @@
                 const opt = new Option(prefix + (f.name || 'Unnamed') + ` (ID: ${f.fld_id})`, f.fld_id);
                 opt.className = `level-${depth + 1}`;
                 all.push(opt);
-
-                // For tree view we collect structure
                 const subs = await fetchFolders(f.fld_id, depth + 1, prefix + '→ ');
                 all.push(...subs);
             }
@@ -319,25 +335,20 @@
         }
     }
 
-    // ── List Folders as Collapsible Tree ──────────────────────────
     async function listFoldersTree() {
         const key = apiKeyInput.value.trim();
         if (!key) return show('Enter API key first', 'error');
 
         listBtn.disabled = true;
         listBtn.textContent = 'Listing...';
-        show('Fetching full folder structure... (may take a moment)', 'info');
+        show('Fetching folder structure...', 'info');
 
         try {
-            resultDiv.innerHTML = '<p>Building folder tree...</p>';
-
-            // Start recursive build
             const treeHtml = await buildFolderTreeHtml(0, 0);
-
-            resultDiv.innerHTML = treeHtml || '<p>No folders found (or empty root).</p>';
+            resultDiv.innerHTML = treeHtml || '<p>No folders found.</p>';
             show('Folder list loaded.', 'success');
         } catch (e) {
-            show(`Error fetching folders: ${e.message}`, 'error');
+            show(`Error: ${e.message}`, 'error');
         } finally {
             listBtn.disabled = false;
             listBtn.textContent = 'List Folders';
@@ -374,18 +385,17 @@
 
     listBtn.addEventListener('click', listFoldersTree);
 
-    // ── Load Folders into Dropdown (existing) ─────────────────────
     loadBtn.addEventListener('click', async () => {
         const key = apiKeyInput.value.trim();
         if (!key) return show('Enter API key first', 'error');
         loadBtn.disabled = true; loadBtn.textContent = 'Loading...';
-        show('Fetching folders for dropdown...', 'info');
+        show('Fetching folders...', 'info');
         try {
             folderSelect.innerHTML = '<option value="0">Root / Default (ID: 0)</option>';
             const subs = await fetchFolders();
             subs.forEach(o => folderSelect.appendChild(o));
             folderGroup.style.display = 'block';
-            show(`Dropdown loaded (${subs.length} subfolders).`, 'success');
+            show(`Dropdown loaded (${subs.length} items).`, 'success');
         } catch (e) {
             show(`Error: ${e.message}`, 'error');
         } finally {
@@ -393,7 +403,6 @@
         }
     });
 
-    // ── Create Folder (existing) ────────────────────────────────
     createBtn.addEventListener('click', () => createFolder(true));
 
     async function createFolder(fromSmallButton = false) {
@@ -431,11 +440,11 @@
                 folderSelect.value = newId;
                 folderInput.value = newId;
 
-                show(`Folder created: ${name} (ID: ${newId})\nReady for upload.`, 'success');
+                show(`Created: ${name} (ID: ${newId})`, 'success');
                 newNameInput.value = ''; newDescInput.value = '';
                 updateMainButton();
             } else {
-                show(`Create failed: ${data.msg || 'Unknown'}\n${JSON.stringify(data, null, 2)}`, 'error');
+                show(`Create failed: ${data.msg || 'Unknown'}`, 'error');
             }
         } catch (e) {
             show(`Network error: ${e.message}`, 'error');
@@ -448,7 +457,6 @@
         }
     }
 
-    // ── Main Action (Upload or Create) ──────────────────────────
     async function handleMainAction() {
         const hasUrl = urlInput.value.trim().length > 0;
         if (!hasUrl) {
@@ -461,12 +469,12 @@
         const fid = folderInput.value.trim();
 
         if (!key) return show('API key required', 'error');
-        if (!/^https?:\/\//.test(url)) return show('Valid http(s) URL required', 'error');
-        if (!/^\d+$/.test(fid)) return show('Folder ID must be a number', 'error');
+        if (!/^https?:\/\//.test(url)) return show('Valid URL required', 'error');
+        if (!/^\d+$/.test(fid)) return show('Folder ID must be number', 'error');
 
         desktopBtn.disabled = true;
         mobileBtn.disabled = true;
-        show('Uploading video...', 'info');
+        show('Uploading...', 'info');
 
         try {
             const p = new URLSearchParams({ key, url });
@@ -475,9 +483,9 @@
             const data = await res.json();
 
             if (data.status === 200 && data.msg === "OK" && data.result?.filecode) {
-                show(`Upload success!\nFilecode: ${data.result.filecode}\n\nLink: https://streamhg.com/${data.result.filecode}`, 'success');
+                show(`Success!\nFilecode: ${data.result.filecode}\nLink: https://streamhg.com/${data.result.filecode}`, 'success');
             } else {
-                show(`Upload failed: ${data.msg || 'Unknown'} (status ${data.status || '?'})`, 'error');
+                show(`Failed: ${data.msg || 'Unknown'}`, 'error');
             }
         } catch (e) {
             show(`Network error: ${e.message}`, 'error');
@@ -493,7 +501,7 @@
     function show(text, type = 'info') {
         resultDiv.textContent = text;
         resultDiv.className = type;
-        resultDiv.innerHTML = ''; // clear any previous HTML if needed
+        resultDiv.innerHTML = ''; // clear previous HTML content
     }
 
     // Init
