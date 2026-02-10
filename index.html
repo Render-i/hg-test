@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-    <title>StreamHG Upload + Folder Create</title>
+    <title>StreamHG Upload & Folder Tools</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -13,14 +13,8 @@
             line-height: 1.5;
             transition: background 0.3s, color 0.3s;
         }
-        body.light {
-            background: #f8f9fa;
-            color: #333;
-        }
-        body.dark {
-            background: #121212;
-            color: #e0e0e0;
-        }
+        body.light { background: #f8f9fa; color: #333; }
+        body.dark  { background: #121212; color: #e0e0e0; }
         .container {
             max-width: 640px;
             margin: 0 auto;
@@ -32,23 +26,12 @@
         body.light .container { background: white; }
         body.dark  .container { background: #1e1e1e; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
 
-        h1 { font-size: 1.6rem; text-align: center; margin-bottom: 1.5rem; }
+        h1 { font-size: 1.6rem; text-align: center; margin-bottom: 1rem; }
         body.light h1 { color: #1a1a1a; }
         body.dark  h1 { color: #ffffff; }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-        .toggle {
-            cursor: pointer;
-            font-size: 1.5rem;
-            padding: 0.5rem;
-            border-radius: 50%;
-            transition: background 0.2s;
-        }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .toggle { cursor: pointer; font-size: 1.5rem; padding: 0.5rem; border-radius: 50%; transition: background 0.2s; }
         body.light .toggle:hover { background: #e9ecef; }
         body.dark  .toggle:hover { background: #333; }
 
@@ -64,16 +47,8 @@
             border-radius: 8px;
             transition: all 0.2s;
         }
-        body.light input, body.light textarea, body.light select {
-            background: white;
-            border: 1px solid #ced4da;
-            color: #333;
-        }
-        body.dark input, body.dark textarea, body.dark select {
-            background: #2d2d2d;
-            border: 1px solid #444;
-            color: #e0e0e0;
-        }
+        body.light input, body.light textarea, body.light select { background: white; border: 1px solid #ced4da; color: #333; }
+        body.dark input, body.dark textarea, body.dark select { background: #2d2d2d; border: 1px solid #444; color: #e0e0e0; }
         input:focus, textarea:focus, select:focus {
             outline: none;
             border-color: #007bff;
@@ -82,23 +57,14 @@
 
         .input-wrapper { position: relative; }
         .clear-btn {
-            position: absolute;
-            right: 0.8rem;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            font-size: 1.6rem;
-            cursor: pointer;
-            padding: 0.3rem;
-            line-height: 1;
-            display: none;
+            position: absolute; right: 0.8rem; top: 50%; transform: translateY(-50%);
+            background: none; border: none; font-size: 1.6rem; cursor: pointer; padding: 0.3rem; line-height: 1; display: none;
         }
         body.light .clear-btn { color: #6c757d; }
         body.dark  .clear-btn { color: #aaa; }
         .clear-btn:hover { color: #212529; }
 
-        .buttons { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 1.5rem 0; }
+        .action-buttons { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 1.5rem 0; }
         button {
             flex: 1 1 180px;
             padding: 0.9rem 1.2rem;
@@ -111,8 +77,8 @@
         }
         #loadFoldersBtn, #createFolderBtn { background: #28a745; color: white; }
         #loadFoldersBtn:hover:not(:disabled), #createFolderBtn:hover:not(:disabled) { background: #218838; }
-        #uploadBtn { background: #007bff; color: white; }
-        #uploadBtn:hover:not(:disabled) { background: #0069d9; }
+        #mainActionBtn { background: #007bff; color: white; }
+        #mainActionBtn:hover:not(:disabled) { background: #0069d9; }
         button:disabled { background: #555 !important; cursor: not-allowed; color: #aaa; }
 
         #result {
@@ -128,7 +94,6 @@
         .success { background: #2e7d32; color: #d4edda; }
         .error   { background: #c62828; color: #ffcdd2; }
         .info    { background: #37474f; color: #e0e0e0; }
-
         body.light .success { background: #d4edda; color: #155724; }
         body.light .error   { background: #f8d7da; color: #721c24; }
         body.light .info    { background: #e2e3e5; color: #383d41; }
@@ -147,7 +112,7 @@
             .container { padding: 1.2rem; }
             h1 { font-size: 1.4rem; }
             button { flex: 1 1 100%; }
-            .buttons { flex-direction: column; }
+            .action-buttons { flex-direction: column; }
         }
     </style>
 </head>
@@ -156,7 +121,7 @@
 <div class="container">
 
     <div class="header">
-        <h1>StreamHG Upload + Create Folder</h1>
+        <h1>StreamHG Tools</h1>
         <span class="toggle" id="themeToggle">☀️</span>
     </div>
 
@@ -166,7 +131,7 @@
     </div>
 
     <div class="form-group">
-        <label for="videoUrl">Video URL</label>
+        <label for="videoUrl">Video URL <small>(leave empty to create folder only)</small></label>
         <div class="input-wrapper">
             <input type="text" id="videoUrl" placeholder="https://example.com/video.mp4" />
             <button type="button" class="clear-btn" id="clearUrl">×</button>
@@ -174,39 +139,39 @@
     </div>
 
     <div class="form-group">
-        <label>Folder Management</label>
-        <div class="buttons" style="margin: 0.5rem 0;">
+        <label>Folder Tools</label>
+        <div class="action-buttons" style="margin: 0.5rem 0 1rem;">
             <button id="loadFoldersBtn">Load Folders</button>
             <button id="createFolderBtn">Create Folder</button>
         </div>
-        <small class="note">Load first to see existing folders, or create directly in root.</small>
+        <small class="note">Create folder → it auto-selects → then paste URL & upload</small>
     </div>
 
     <div class="form-group" id="folderSelectGroup" style="display:none;">
-        <label for="folderSelect">Select Parent / Target Folder</label>
+        <label for="folderSelect">Select Folder / Parent</label>
         <select id="folderSelect">
             <option value="0">Root / Default (ID: 0)</option>
         </select>
     </div>
 
     <div class="form-group">
-        <label for="newFolderName">New Folder Name</label>
-        <input type="text" id="newFolderName" placeholder="e.g. My 2025 Videos" />
+        <label for="newFolderName">New Folder Name <small>(for creation)</small></label>
+        <input type="text" id="newFolderName" placeholder="e.g. 2025 Clips" />
     </div>
 
     <div class="form-group">
         <label for="newFolderDesc">Description (optional)</label>
-        <textarea id="newFolderDesc" placeholder="Short description of this folder"></textarea>
+        <textarea id="newFolderDesc" placeholder="Folder description..."></textarea>
     </div>
 
     <div class="form-group">
-        <label for="folderId">Upload Folder ID (auto-filled from selection)</label>
-        <input type="text" id="folderId" value="0" placeholder="e.g. 25" />
-        <small class="note">0 = root folder</small>
+        <label for="folderId">Target Folder ID</label>
+        <input type="text" id="folderId" value="0" placeholder="e.g. 25 (auto-filled)" />
+        <small class="note">0 = root • auto-updates from selection or new folder</small>
     </div>
 
-    <div class="buttons">
-        <button id="uploadBtn">Start Upload</button>
+    <div class="action-buttons">
+        <button id="mainActionBtn">Upload Video</button>
     </div>
 
     <div id="result"></div>
@@ -214,7 +179,7 @@
 </div>
 
 <script>
-    // Theme toggle
+    // ── Theme Toggle ───────────────────────────────────────
     const toggle = document.getElementById('themeToggle');
     const body = document.body;
 
@@ -225,41 +190,46 @@
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
     }
 
-    // Load saved theme or default to light
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    const saved = localStorage.getItem('theme');
+    if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         setTheme(true);
     } else {
         setTheme(false);
     }
 
-    toggle.addEventListener('click', () => {
-        setTheme(!body.classList.contains('dark'));
-    });
+    toggle.addEventListener('click', () => setTheme(!body.classList.contains('dark')));
 
-    // Rest of your script (unchanged logic, just variables renamed for clarity)
+    // ── App Logic ──────────────────────────────────────────
     const apiKeyInput    = document.getElementById('apiKey');
     const urlInput       = document.getElementById('videoUrl');
     const clearBtn       = document.getElementById('clearUrl');
     const loadBtn        = document.getElementById('loadFoldersBtn');
     const createBtn      = document.getElementById('createFolderBtn');
+    const mainBtn        = document.getElementById('mainActionBtn');
     const folderSelect   = document.getElementById('folderSelect');
     const folderGroup    = document.getElementById('folderSelectGroup');
     const folderInput    = document.getElementById('folderId');
     const newNameInput   = document.getElementById('newFolderName');
     const newDescInput   = document.getElementById('newFolderDesc');
-    const uploadBtn      = document.getElementById('uploadBtn');
     const result         = document.getElementById('result');
 
     const MAX_DEPTH = 5;
 
+    function updateMainButton() {
+        const hasUrl = urlInput.value.trim().length > 0;
+        mainBtn.textContent = hasUrl ? 'Upload Video' : 'Create Folder Only';
+        mainBtn.style.background = hasUrl ? '#007bff' : '#28a745';
+    }
+
     urlInput.addEventListener('input', () => {
         clearBtn.style.display = urlInput.value.trim() ? 'block' : 'none';
+        updateMainButton();
     });
 
     clearBtn.addEventListener('click', () => {
         urlInput.value = '';
         clearBtn.style.display = 'none';
+        updateMainButton();
         urlInput.focus();
     });
 
@@ -287,13 +257,10 @@
             if (data.status !== 200 || data.msg !== "OK" || !data.result?.folders) return [];
             let all = [];
             for (const f of data.result.folders || []) {
-                const name = f.name || 'Unnamed';
-                const id = f.fld_id;
-                const display = prefix + name + ` (ID: ${id})`;
-                const opt = new Option(display, id);
+                const opt = new Option(prefix + (f.name || 'Unnamed') + ` (ID: ${f.fld_id})`, f.fld_id);
                 opt.className = `level-${depth + 1}`;
                 all.push(opt);
-                const subs = await fetchFolders(id, depth + 1, prefix + '→ ');
+                const subs = await fetchFolders(f.fld_id, depth + 1, prefix + '→ ');
                 all.push(...subs);
             }
             return all;
@@ -305,43 +272,38 @@
     loadBtn.addEventListener('click', async () => {
         const key = apiKeyInput.value.trim();
         if (!key) return show('Enter API key first', 'error');
-
-        loadBtn.disabled = true;
-        loadBtn.textContent = 'Loading...';
+        loadBtn.disabled = true; loadBtn.textContent = 'Loading...';
         show('Fetching folders...', 'info');
-
         try {
             folderSelect.innerHTML = '<option value="0">Root / Default (ID: 0)</option>';
-            const subs = await fetchFolders(0, 0, '');
+            const subs = await fetchFolders();
             subs.forEach(o => folderSelect.appendChild(o));
             folderGroup.style.display = 'block';
-            show(`Loaded (${subs.length} subfolders).`, 'success');
+            show(`Folders loaded (${subs.length} subfolders).`, 'success');
         } catch (e) {
             show(`Error: ${e.message}`, 'error');
         } finally {
-            loadBtn.disabled = false;
-            loadBtn.textContent = 'Load Folders';
+            loadBtn.disabled = false; loadBtn.textContent = 'Load Folders';
         }
     });
 
-    createBtn.addEventListener('click', async () => {
+    createBtn.addEventListener('click', async () => await createFolder(true)); // standalone create
+
+    async function createFolder(fromButton = false) {
         const key = apiKeyInput.value.trim();
         const name = newNameInput.value.trim();
         const desc = newDescInput.value.trim();
         const parentId = folderSelect.value || '0';
 
         if (!key) return show('API key required', 'error');
-        if (!name) return show('Folder name is required', 'error');
+        if (!name) return show('Folder name required', 'error');
 
-        createBtn.disabled = true;
-        createBtn.textContent = 'Creating...';
+        createBtn.disabled = true; createBtn.textContent = 'Creating...';
+        if (!fromButton) mainBtn.disabled = true;
         show('Creating folder...', 'info');
 
         try {
-            const params = new URLSearchParams({
-                key,
-                name: encodeURIComponent(name)
-            });
+            const params = new URLSearchParams({ key, name: encodeURIComponent(name) });
             if (parentId !== '0') params.append('parent_id', parentId);
             if (desc) params.append('descr', encodeURIComponent(desc));
 
@@ -350,44 +312,48 @@
 
             if (data.status === 200 && data.msg === "OK" && data.result?.fld_id) {
                 const newId = data.result.fld_id;
-                const parentOpt = folderSelect.querySelector(`option[value="${parentId}"]`);
-                const level = parentOpt ? parseInt(parentOpt.className.replace('level-', '')) || 0 : 0;
-                const prefix = '→ '.repeat(level);
-                const display = prefix + name + ` (ID: ${newId})`;
+                const level = folderSelect.querySelector(`option[value="${parentId}"]`)?.className?.replace('level-', '') || 0;
+                const prefix = '→ '.repeat(Number(level));
+                const opt = new Option(prefix + name + ` (ID: ${newId})`, newId);
+                opt.className = `level-${Number(level) + 1}`;
 
-                const newOpt = new Option(display, newId);
-                newOpt.className = `level-${level + 1}`;
-
-                folderSelect.appendChild(newOpt);
+                folderSelect.appendChild(opt);
                 folderSelect.value = newId;
                 folderInput.value = newId;
 
-                show(`Folder created!\nName: ${name}\nID: ${newId}\nParent: ${parentId}`, 'success');
-                newNameInput.value = '';
-                newDescInput.value = '';
+                show(`Folder created: ${name} (ID: ${newId})\nReady for upload.`, 'success');
+                newNameInput.value = ''; newDescInput.value = '';
+                if (!fromButton) updateMainButton(); // refresh button text
             } else {
-                show(`Create failed: ${data.msg || 'Unknown error'}\nStatus: ${data.status || '?'}\n\n${JSON.stringify(data, null, 2)}`, 'error');
+                show(`Create failed: ${data.msg || 'Unknown'}\n${JSON.stringify(data, null, 2)}`, 'error');
             }
         } catch (e) {
             show(`Network error: ${e.message}`, 'error');
         } finally {
-            createBtn.disabled = false;
-            createBtn.textContent = 'Create Folder';
+            createBtn.disabled = false; createBtn.textContent = 'Create Folder';
+            if (!fromButton) mainBtn.disabled = false;
         }
-    });
+    }
 
-    uploadBtn.addEventListener('click', async () => {
+    mainBtn.addEventListener('click', async () => {
+        const hasUrl = urlInput.value.trim().length > 0;
+        if (!hasUrl) {
+            // Create folder only
+            await createFolder(false);
+            return;
+        }
+
+        // Upload video
         const key = apiKeyInput.value.trim();
         const url = urlInput.value.trim();
         const fid = folderInput.value.trim();
 
         if (!key) return show('API key required', 'error');
-        if (!url) return show('Video URL required', 'error');
-        if (!/^https?:\/\//.test(url)) return show('URL must start with http(s)://', 'error');
+        if (!/^https?:\/\//.test(url)) return show('Valid http(s) URL required', 'error');
         if (!/^\d+$/.test(fid)) return show('Folder ID must be a number', 'error');
 
-        uploadBtn.disabled = true;
-        show('Uploading…', 'info');
+        mainBtn.disabled = true;
+        show('Uploading video...', 'info');
 
         try {
             const p = new URLSearchParams({ key, url });
@@ -396,14 +362,14 @@
             const data = await res.json();
 
             if (data.status === 200 && data.msg === "OK" && data.result?.filecode) {
-                show(`Success!\nFilecode: ${data.result.filecode}\n\nLink: https://streamhg.com/${data.result.filecode}`, 'success');
+                show(`Upload success!\nFilecode: ${data.result.filecode}\n\nLink: https://streamhg.com/${data.result.filecode}`, 'success');
             } else {
-                show(`Error: ${data.msg || 'Unknown'} (status ${data.status || '?'})`, 'error');
+                show(`Upload failed: ${data.msg || 'Unknown'} (status ${data.status || '?'})`, 'error');
             }
         } catch (e) {
             show(`Network error: ${e.message}`, 'error');
         } finally {
-            uploadBtn.disabled = false;
+            mainBtn.disabled = false;
         }
     });
 
@@ -412,8 +378,10 @@
         result.className = type;
     }
 
+    // Init
     if (urlInput.value.trim()) clearBtn.style.display = 'block';
+    updateMainButton();
 </script>
 
 </body>
-</html>
+    </html>
