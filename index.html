@@ -346,7 +346,7 @@
         try {
             const treeHtml = await buildFolderTreeHtml(0, 0);
             resultDiv.innerHTML = treeHtml || '<p>No folders found.</p>';
-            show('Folder list loaded.', 'success');
+            resultDiv.className = 'success';
         } catch (e) {
             show(`Error: ${e.message}`, 'error');
         } finally {
@@ -499,9 +499,8 @@
     mobileBtn.addEventListener('click', handleMainAction);
 
     function show(text, type = 'info') {
-        resultDiv.textContent = text;
         resultDiv.className = type;
-        resultDiv.innerHTML = ''; // clear previous HTML content
+        resultDiv.textContent = text;
     }
 
     // Init
