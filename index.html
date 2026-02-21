@@ -58,12 +58,25 @@
 
         .input-wrapper { position: relative; }
         .clear-btn {
-            position: absolute; right: 0.8rem; top: 50%; transform: translateY(-50%);
-            background: none; border: none; font-size: 1.6rem; cursor: pointer; padding: 0.3rem; line-height: 1; display: none;
+            position: absolute; 
+            right: 0.8rem; 
+            top: 50%; 
+            transform: translateY(-50%);
+            background: none; 
+            border: none; 
+            font-size: 1.2rem; /* Changed from 1.6rem */
+            cursor: pointer; 
+            padding: 0.2rem 0.4rem; /* Smaller padding */
+            line-height: 1; 
+            display: none;
+            opacity: 0.6; /* Subtle by default */
+            transition: opacity 0.2s;
         }
         body.light .clear-btn { color: #6c757d; }
         body.dark  .clear-btn { color: #aaa; }
-        .clear-btn:hover { color: #212529; }
+        .clear-btn:hover { 
+            opacity: 1; /* Full opacity on hover */
+        }
 
         /* Main action buttons (upload/create only) */
         .action-buttons {
