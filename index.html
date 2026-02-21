@@ -57,27 +57,37 @@
         }
 
         .input-wrapper { position: relative; }
-        .clear-btn {
-            position: absolute; 
-            right: 0.8rem; 
-            top: 50%; 
-            transform: translateY(-50%);
-            background: none; 
-            border: none; 
-            font-size: 1.2rem; /* Changed from 1.6rem */
-            cursor: pointer; 
-            padding: 0.2rem 0.4rem; /* Smaller padding */
-            line-height: 1; 
-            display: none;
-            opacity: 0.6; /* Subtle by default */
-            transition: opacity 0.2s;
-        }
-        body.light .clear-btn { color: #6c757d; }
-        body.dark  .clear-btn { color: #aaa; }
-        .clear-btn:hover { 
-            opacity: 1; /* Full opacity on hover */
-        }
-
+.clear-btn {
+    position: absolute; 
+    right: 0.6rem; 
+    top: 50%; 
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.1); /* Subtle background */
+    border: none; 
+    border-radius: 50%; /* Circle */
+    width: 20px;
+    height: 20px;
+    font-size: 1rem;
+    cursor: pointer; 
+    line-height: 1; 
+    display: none;
+    transition: all 0.2s;
+}
+body.light .clear-btn { 
+    color: #666; 
+    background: rgba(0,0,0,0.08);
+}
+body.dark .clear-btn { 
+    color: #aaa; 
+    background: rgba(255,255,255,0.1);
+}
+.clear-btn:hover { 
+    background: rgba(0,0,0,0.15);
+    transform: translateY(-50%) scale(1.1); /* Slight grow on hover */
+}
+body.dark .clear-btn:hover {
+    background: rgba(255,255,255,0.2);
+}
         /* Main action buttons (upload/create only) */
         .action-buttons {
             display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 1.5rem 0;
