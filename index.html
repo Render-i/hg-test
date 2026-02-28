@@ -56,26 +56,26 @@
             box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
         }
 
-        /* ==================== 10x10 PX CLEAR BUTTON (as you asked) ==================== */
+        /* ==================== SMALL TOUCH AREA (20px round) ==================== */
         .input-wrapper { position: relative; }
 
         .input-wrapper input[type="text"] {
-            padding: 0.75rem 1.65rem 0.75rem 1rem;   /* tightest possible */
+            padding: 0.75rem 1.75rem 0.75rem 1rem;   /* minimal reserved space */
         }
 
         .clear-btn {    
             position: absolute; 
-            right: 0.25rem;      /* right against the edge */
+            right: 0.3rem; 
             top: 50%; 
             transform: translateY(-50%);
             background: none; 
             border: none; 
-            font-size: 0.85rem; 
+            font-size: 1.25rem;      /* × stays clearly visible */
             cursor: pointer; 
             padding: 0;
-            width: 10px; 
-            height: 10px;
-            line-height: 1;
+            width: 20px;             /* ← SMALL TOUCH AREA (20px diameter) */
+            height: 20px;
+            line-height: 20px;
             display: none;
             border-radius: 50%;
             transition: all 0.2s;
