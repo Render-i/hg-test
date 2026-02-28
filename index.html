@@ -56,26 +56,26 @@
             box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
         }
 
-        /* ==================== SMALL TOUCH AREA (20px round) ==================== */
+        /* ==================== SMALL 16px ROUND TOUCH AREA ==================== */
         .input-wrapper { position: relative; }
 
         .input-wrapper input[type="text"] {
-            padding: 0.75rem 1.75rem 0.75rem 1rem;   /* minimal reserved space */
+            padding: 0.75rem 1.6rem 0.75rem 1rem;   /* tight space */
         }
 
         .clear-btn {    
             position: absolute; 
-            right: 0.3rem; 
+            right: 0.25rem; 
             top: 50%; 
             transform: translateY(-50%);
             background: none; 
             border: none; 
-            font-size: 1.25rem;      /* × stays clearly visible */
+            font-size: 1.15rem;      /* × stays clear */
             cursor: pointer; 
             padding: 0;
-            width: 20px;             /* ← SMALL TOUCH AREA (20px diameter) */
-            height: 20px;
-            line-height: 20px;
+            width: 16px;             /* ← ROUND TOUCH AREA = 16px */
+            height: 16px;
+            line-height: 16px;
             display: none;
             border-radius: 50%;
             transition: all 0.2s;
