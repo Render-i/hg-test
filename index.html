@@ -56,26 +56,26 @@
             box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
         }
 
-        /* ==================== IMPROVED CLEAR BUTTON ==================== */
+        /* ==================== COMPACT CLEAR BUTTON ==================== */
         .input-wrapper { position: relative; }
 
         .input-wrapper input[type="text"] {
-            padding: 0.75rem 2.6rem 0.75rem 1rem;   /* reserved space for clear button */
+            padding: 0.75rem 2.3rem 0.75rem 1rem;   /* tighter horizontal space */
         }
 
         .clear-btn {    
             position: absolute; 
-            right: 0.75rem; 
+            right: 0.65rem; 
             top: 50%; 
             transform: translateY(-50%);
             background: none; 
             border: none; 
-            font-size: 1.1rem; 
+            font-size: 1.15rem; 
             cursor: pointer; 
-            padding: 4px;
-            width: 26px; 
-            height: 26px;
-            line-height: 18px;
+            padding: 3px;
+            width: 22px; 
+            height: 22px;
+            line-height: 1;
             display: none;
             border-radius: 50%;
             transition: all 0.2s;
@@ -440,7 +440,6 @@
         show('Creating folder...', 'info');
 
         try {
-            // FIXED: No manual encodeURIComponent → URLSearchParams handles it correctly
             const params = new URLSearchParams();
             params.append('key', key);
             params.append('name', name);
